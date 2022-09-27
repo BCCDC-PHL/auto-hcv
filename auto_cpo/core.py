@@ -40,7 +40,6 @@ def find_fastq_dirs(config, check_symlinks_complete=True):
         if all(conditions_met):
             logging.info(json.dumps({"event_type": "fastq_directory_found", "sequencing_run_id": run_id, "fastq_directory_path": os.path.abspath(subdir.path)}))
             pipeline_parameters['fastq_input'] = os.path.abspath(subdir.path)
-            pipeline_parameters['outdir'] = analysis_outdir
             yield pipeline_parameters
         else:
             logging.debug(json.dumps({"event_type": "directory_skipped", "fastq_directory_path": os.path.abspath(subdir.path), "conditions_checked": conditions_checked}))
@@ -81,6 +80,11 @@ def analyze_run(config, run):
         notification_email_addresses = []
     for pipeline in config['pipelines']:
         pipeline_parameters = pipeline['pipeline_parameters']
+        pipeline_short_name = pipeline['pipeline_name'].split('/')[1]
+        pipeline_minor_version = ''.join(pipeline['pipeline_version'].rsplit('.', 1)[0])
+        analysis_output_dir_name = '-'.join([pipeline_short_name, pipeline_minor_version, 'output'])
+        outdir = os.path.abspath(os.path.join(config['analysis_output_dir'], os.path.basename(run['fastq_input']), analysis_output_dir_name))
+        pipeline_parameters['outdir'] = outdir
         if pipeline['pipeline_name'] == 'BCCDC-PHL/taxon-abundance':
             run_fastq_files = glob.glob(os.path.join(run['fastq_input'], '*.f*q.gz'))
             first_fastq = None
@@ -92,14 +96,14 @@ def analyze_run(config, run):
                 return None
 
             read_length = fastq.estimate_read_length(fastq.get_first_n_reads(first_fastq, 100))
-            pipeline_parameters['bracken_db'] = os.path.abspath(os.path.join(pipeline_parameters['bracken_db'], 'database' + str(read_length) + 'mers.kmer_distrib'))
+            pipeline_parameters['read_length'] = str(read_length)
         
         analysis_timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
         analysis_run_id = os.path.basename(run['fastq_input'])
         analysis_work_dir = os.path.abspath(os.path.join(base_analysis_work_dir, 'work-' + analysis_run_id + '-' + analysis_timestamp))
-        analysis_report_path = os.path.abspath(os.path.join(base_analysis_outdir, analysis_run_id, analysis_run_id + '_report.html'))
-        analysis_trace_path = os.path.abspath(os.path.join(base_analysis_outdir, analysis_run_id, analysis_run_id + '_trace.txt'))
-        analysis_timeline_path = os.path.abspath(os.path.join(base_analysis_outdir, analysis_run_id, analysis_run_id + '_timeline.html'))
+        analysis_report_path = os.path.abspath(os.path.join(outdir, analysis_run_id + '_report.html'))
+        analysis_trace_path = os.path.abspath(os.path.join(outdir, analysis_run_id + '_trace.txt'))
+        analysis_timeline_path = os.path.abspath(os.path.join(outdir, analysis_run_id + '_timeline.html'))
         pipeline_command = [
             'nextflow',
             'run',
