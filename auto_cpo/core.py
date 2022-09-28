@@ -17,6 +17,8 @@ def find_fastq_dirs(config, check_symlinks_complete=True):
     nextseq_run_id_regex = "\d{6}_VH\d{5}_\d+_[A-Z0-9]{9}"
     fastq_by_run_dir = config['fastq_by_run_dir']
     subdirs = os.scandir(fastq_by_run_dir)
+    if 'analyze_runs_in_reverse_order' in config and config['analyze_runs_in_reverse_order']:
+        subdirs = sorted(subdirs, key=lambda x: os.path.basename(x.path), reverse=True)
     for subdir in subdirs:
         run_id = subdir.name
         matches_miseq_regex = re.match(miseq_run_id_regex, run_id)
