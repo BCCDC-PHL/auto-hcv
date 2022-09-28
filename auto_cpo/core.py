@@ -122,7 +122,7 @@ def analyze_run(config: dict[str, object], analysis: dict[str, object]):
     base_analysis_work_dir = config['analysis_work_dir']
     no_value_flags_by_pipeline_name = {
         "BCCDC-PHL/taxon-abundance": [],
-        "BCCDC-PHL/routine-assembly": ["unicycler", "hybrid", "bakta", "prokka"],
+        "BCCDC-PHL/routine-assembly": ["unicycler", "shovill", "dragonflye", "hybrid", "bakta", "prokka"],
         "BCCDC-PHL/mlst-nf": [],
         "BCCDC-PHL/plasmid-screen": ["pre_assembled"],
     }
