@@ -60,6 +60,18 @@ def scan(config: dict[str, object]) -> Iterator[Optional[dict[str, object]]]:
 
 def check_analysis_dependencies_complete(pipeline: dict[str, object], analysis: dict[str, object], analysis_run_output_dir: str):
     """
+    Check that all of the entries in the pipeline's `dependencies` config have completed. If so, return True. Return False otherwise.
+
+    Pipeline completion is determined by the presence of an `analysis_complete.json` file in the analysis output directory.
+
+    :param pipeline:
+    :type pipeline: dict[str, object]
+    :param analysis:
+    :type analysis: dictp[str, object]
+    :param analysis_run_output_dir:
+    :type analysis_run_output_dir: str
+    :return: Whether or not all of the pipelines listed in `dependencies` have completed.
+    :rtype: bool
     """
     all_dependencies_complete = False
     dependencies = pipeline['dependencies']
@@ -88,11 +100,24 @@ def check_analysis_dependencies_complete(pipeline: dict[str, object], analysis: 
     return all_dependencies_complete
 
 
-def analyze_run(config, analysis):
+def analyze_run(config: dict[str, object], analysis: dict[str, object]):
     """
-    Initiate an analysis on one directory of fastq files.
+    Initiate an analysis on one directory of fastq files. We assume that the directory of fastq files is named using
+    a sequencing run ID.
+
+    Runs the pipeline as defined in the config, with parameters configured for the run to be analyzed. Skips any
+    analyses that have already been initiated (whether completed or not).
+
+    Some pipelines may specify that they depend on the outputs of another through their 'dependencies' config.
+    For those pipelines, we confirm that all of the upstream analyses that we depend on are complete, or the analysis will be skipped.
+
+    :param config:
+    :type config: dict[str, object]
+    :param analysis:
+    :type analysis: dict[str, object]
+    :return: None
+    :rtype: NoneType
     """
-    stashed_fastq_input = None
     base_analysis_outdir = config['analysis_output_dir']
     base_analysis_work_dir = config['analysis_work_dir']
     no_value_flags_by_pipeline_name = {
@@ -106,6 +131,7 @@ def analyze_run(config, analysis):
     else:
         notification_email_addresses = []
     for pipeline in config['pipelines']:
+        stashed_fastq_input = None
         pipeline_parameters = pipeline['pipeline_parameters']
         pipeline_short_name = pipeline['pipeline_name'].split('/')[1]
         pipeline_minor_version = ''.join(pipeline['pipeline_version'].rsplit('.', 1)[0])
