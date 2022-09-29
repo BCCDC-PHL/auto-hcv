@@ -56,7 +56,8 @@ def main():
                         logging.info(json.dumps({"event_type": "config_loaded", "config_file": os.path.abspath(args.config)}))
                     except json.decoder.JSONDecodeError as e:
                         logging.error(json.dumps({"event_type": "load_config_failed", "config_file": os.path.abspath(args.config)}))
-                    core.analyze_run(config, run)
+                    if run['instrument_type'] == 'illumina':
+                        core.analyze_run(config, run, "short")
                 if quit_when_safe:
                     exit(0)
             scan_complete_timestamp = datetime.datetime.now()
