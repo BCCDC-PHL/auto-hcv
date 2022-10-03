@@ -156,20 +156,20 @@ def analyze_run(config: dict[str, object], run: dict[str, object], assembly_mode
         elif pipeline['pipeline_name'] == 'BCCDC-PHL/mlst-nf':
             analysis_run_id = os.path.basename(run['analysis_parameters']['fastq_input'])
             stashed_fastq_input = run['analysis_parameters'].pop('fastq_input', None)
-            analysis_run_output_dir = os.path.abspath(os.path.join(base_analysis_outdir, analysis_run_id))
-            assemblies_dir = os.path.join(analysis_run_output_dir, assembly_mode, 'assemblies')
+            analysis_run_output_dir = os.path.abspath(os.path.join(base_analysis_outdir, analysis_run_id, assembly_mode))
+            assemblies_dir = os.path.join(analysis_run_output_dir, 'assemblies')
             run['analysis_parameters']['assembly_input'] = assemblies_dir
         elif pipeline['pipeline_name'] == 'BCCDC-PHL/plasmid-screen':
             analysis_run_id = os.path.basename(run['analysis_parameters']['fastq_input'])
-            analysis_run_output_dir = os.path.abspath(os.path.join(base_analysis_outdir, analysis_run_id))
+            analysis_run_output_dir = os.path.abspath(os.path.join(base_analysis_outdir, analysis_run_id, assembly_mode))
             assemblies_dir = os.path.join(analysis_run_output_dir, 'assemblies')
             run['analysis_parameters']['assembly_input'] = assemblies_dir
         else:
             analysis_run_id = os.path.basename(run['analysis_parameters']['fastq_input'])
+            analysis_run_output_dir = os.path.abspath(os.path.join(base_analysis_outdir, analysis_run_id, assembly_mode))
 
         analysis_output_dir_name = '-'.join([pipeline_short_name, pipeline_minor_version, 'output'])
-        analysis_run_output_dir = os.path.abspath(os.path.join(base_analysis_outdir, analysis_run_id))
-        analysis_pipeline_output_dir = os.path.abspath(os.path.join(analysis_run_output_dir, assembly_mode, analysis_output_dir_name))
+        analysis_pipeline_output_dir = os.path.abspath(os.path.join(analysis_run_output_dir, analysis_output_dir_name))
         pipeline_parameters['outdir'] = analysis_pipeline_output_dir
 
         analysis_dependencies_complete = check_analysis_dependencies_complete(pipeline, run['analysis_parameters'], analysis_run_output_dir)
@@ -207,12 +207,14 @@ def analyze_run(config: dict[str, object], run: dict[str, object], assembly_mode
             pipeline_parameters['read_length'] = str(read_length)
 
         analysis_timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-        analysis_work_dir = os.path.abspath(os.path.join(base_analysis_work_dir, 'work-' + analysis_run_id + '-' + analysis_timestamp))
-        analysis_report_path = os.path.abspath(os.path.join(analysis_pipeline_output_dir, analysis_run_id + '_report.html'))
-        analysis_trace_path = os.path.abspath(os.path.join(analysis_pipeline_output_dir, analysis_run_id + '_trace.tsv'))
-        analysis_timeline_path = os.path.abspath(os.path.join(analysis_pipeline_output_dir, analysis_run_id + '_timeline.html'))
+        analysis_work_dir = os.path.abspath(os.path.join(base_analysis_work_dir, 'work-' + analysis_run_id + '_' + pipeline_short_name + '_' + analysis_timestamp))
+        analysis_report_path = os.path.abspath(os.path.join(analysis_pipeline_output_dir, analysis_run_id + '_' + pipeline_short_name + '_report.html'))
+        analysis_trace_path = os.path.abspath(os.path.join(analysis_pipeline_output_dir, analysis_run_id + '_' + pipeline_short_name + '_trace.tsv'))
+        analysis_timeline_path = os.path.abspath(os.path.join(analysis_pipeline_output_dir, analysis_run_id + '_' + pipeline_short_name + '_timeline.html'))
+        analysis_log_path = os.path.abspath(os.path.join(analysis_pipeline_output_dir, analysis_run_id + '_' + pipeline_short_name + '_nextflow.log'))
         pipeline_command = [
             'nextflow',
+            '-log', analysis_log_path,
             'run',
             pipeline['pipeline_name'],
             '-r', pipeline['pipeline_version'],
