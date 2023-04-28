@@ -6,11 +6,9 @@ import os
 import re
 import shutil
 import subprocess
-import uuid
 
 from typing import Iterator, Optional
 
-import auto_hcv.fastq as fastq
 
 def find_fastq_dirs(config, check_symlinks_complete=True):
     miseq_run_id_regex = "\d{6}_M\d{5}_\d+_\d{9}-[A-Z0-9]{5}"
