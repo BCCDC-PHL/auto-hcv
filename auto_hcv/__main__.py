@@ -7,9 +7,8 @@ import logging
 import os
 import time
 
-import auto_cpo.config
-import auto_cpo.core as core
-import auto_cpo.fastq as fastq
+import auto_hcv.config
+import auto_hcv.core as core
 
 DEFAULT_SCAN_INTERVAL_SECONDS = 3600.0
 
@@ -41,7 +40,7 @@ def main():
         try:
             if args.config:
                 try:
-                    config = auto_cpo.config.load_config(args.config)
+                    config = auto_hcv.config.load_config(args.config)
                     logging.info(json.dumps({"event_type": "config_loaded", "config_file": os.path.abspath(args.config)}))
                 except json.decoder.JSONDecodeError as e:
                     # If we fail to load the config file, we continue on with the
@@ -52,7 +51,7 @@ def main():
             for run in core.scan(config):
                 if run is not None:
                     try:
-                        config = auto_cpo.config.load_config(args.config)
+                        config = auto_hcv.config.load_config(args.config)
                         logging.info(json.dumps({"event_type": "config_loaded", "config_file": os.path.abspath(args.config)}))
                     except json.decoder.JSONDecodeError as e:
                         logging.error(json.dumps({"event_type": "load_config_failed", "config_file": os.path.abspath(args.config)}))

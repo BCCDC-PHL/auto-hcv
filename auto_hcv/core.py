@@ -10,12 +10,12 @@ import uuid
 
 from typing import Iterator, Optional
 
-import auto_cpo.fastq as fastq
+import auto_hcv.fastq as fastq
 
 def find_fastq_dirs(config, check_symlinks_complete=True):
     miseq_run_id_regex = "\d{6}_M\d{5}_\d+_\d{9}-[A-Z0-9]{5}"
     nextseq_run_id_regex = "\d{6}_VH\d{5}_\d+_[A-Z0-9]{9}"
-    gridion_run_id_regex = "\d{8}_\d{4}_X[1-5]_[A-Z0-9]+_[a-z0-9]{8}"
+    
     fastq_by_run_dir = config['fastq_by_run_dir']
     subdirs = os.scandir(fastq_by_run_dir)
     if 'analyze_runs_in_reverse_order' in config and config['analyze_runs_in_reverse_order']:
@@ -26,7 +26,6 @@ def find_fastq_dirs(config, check_symlinks_complete=True):
 
         matches_miseq_regex = re.match(miseq_run_id_regex, run_id)
         matches_nextseq_regex = re.match(nextseq_run_id_regex, run_id)
-        matches_gridion_regex = re.match(gridion_run_id_regex, run_id)
 
         if check_symlinks_complete:
             ready_to_analyze = os.path.exists(os.path.join(subdir.path, "symlinks_complete.json"))
@@ -88,7 +87,7 @@ def check_analysis_dependencies_complete(pipeline: dict[str, object], analysis: 
     :rtype: bool
     """
     all_dependencies_complete = False
-    dependencies = pipeline['dependencies']
+    dependencies = pipeline.get('dependencies', None)
     if dependencies is None:
         return True
     dependencies_complete = []
@@ -151,22 +150,8 @@ def analyze_run(config: dict[str, object], run: dict[str, object], assembly_mode
         pipeline_short_name = pipeline['pipeline_name'].split('/')[1]
         pipeline_minor_version = ''.join(pipeline['pipeline_version'].rsplit('.', 1)[0])
 
-        if pipeline['pipeline_name'] == 'BCCDC-PHL/routine-assembly' and assembly_mode == "short":
-            pipeline['pipeline_parameters'].pop('fastq_input_long', None)
-        elif pipeline['pipeline_name'] == 'BCCDC-PHL/mlst-nf':
-            analysis_run_id = os.path.basename(run['analysis_parameters']['fastq_input'])
-            stashed_fastq_input = run['analysis_parameters'].pop('fastq_input', None)
-            analysis_run_output_dir = os.path.abspath(os.path.join(base_analysis_outdir, analysis_run_id, assembly_mode))
-            assemblies_dir = os.path.join(analysis_run_output_dir, 'assemblies')
-            run['analysis_parameters']['assembly_input'] = assemblies_dir
-        elif pipeline['pipeline_name'] == 'BCCDC-PHL/plasmid-screen':
-            analysis_run_id = os.path.basename(run['analysis_parameters']['fastq_input'])
-            analysis_run_output_dir = os.path.abspath(os.path.join(base_analysis_outdir, analysis_run_id, assembly_mode))
-            assemblies_dir = os.path.join(analysis_run_output_dir, 'assemblies')
-            run['analysis_parameters']['assembly_input'] = assemblies_dir
-        else:
-            analysis_run_id = os.path.basename(run['analysis_parameters']['fastq_input'])
-            analysis_run_output_dir = os.path.abspath(os.path.join(base_analysis_outdir, analysis_run_id, assembly_mode))
+        if pipeline['pipeline_name'] == 'BCCDC-PHL/hcv-nf':
+            pass
 
         analysis_output_dir_name = '-'.join([pipeline_short_name, pipeline_minor_version, 'output'])
         analysis_pipeline_output_dir = os.path.abspath(os.path.join(analysis_run_output_dir, analysis_output_dir_name))
@@ -193,7 +178,7 @@ def analyze_run(config: dict[str, object], run: dict[str, object], assembly_mode
                 run['analysis_parameters']['fastq_input'] = stashed_fastq_input
             continue
 
-        if pipeline['pipeline_name'] == 'BCCDC-PHL/taxon-abundance':
+        if pipeline['pipeline_name'] == 'BCCDC-PHL/hcv-nf':
             run_fastq_files = glob.glob(os.path.join(run['analysis_parameters']['fastq_input'], '*.f*q.gz'))
             first_fastq = None
             if len(run_fastq_files) > 0:
@@ -240,23 +225,15 @@ def analyze_run(config: dict[str, object], run: dict[str, object], assembly_mode
         logging.info(json.dumps({"event_type": "analysis_started", "sequencing_run_id": analysis_run_id, "pipeline_command": " ".join(pipeline_command)}))
         analysis_complete = {"timestamp_analysis_start": datetime.datetime.now().isoformat()}
         try:
-            analysis_result = subprocess.run(pipeline_command, capture_output=True, check=True)
+            # analysis_result = subprocess.run(pipeline_command, capture_output=True, check=True)
             analysis_complete['timestamp_analysis_complete'] = datetime.datetime.now().isoformat()
             with open(os.path.join(analysis_pipeline_output_dir, 'analysis_complete.json'), 'w') as f:
                 json.dump(analysis_complete, f, indent=2)
             logging.info(json.dumps({"event_type": "analysis_completed", "sequencing_run_id": analysis_run_id, "pipeline_command": " ".join(pipeline_command)}))
             shutil.rmtree(analysis_work_dir, ignore_errors=True)
             logging.info(json.dumps({"event_type": "analysis_work_dir_deleted", "sequencing_run_id": analysis_run_id, "analysis_work_dir_path": analysis_work_dir}))
-            if pipeline['pipeline_name'] == 'BCCDC-PHL/routine-assembly':
-                assemblies_dir = os.path.join(analysis_run_output_dir, "assemblies")
-                os.makedirs(assemblies_dir, exist_ok=True)
-                for assembly in glob.glob(os.path.join(analysis_pipeline_output_dir, '*', '*.fa')):
-                    src = assembly
-                    dest = os.path.join(assemblies_dir, os.path.basename(assembly))
-                    os.symlink(src, dest)
-                logging.info(json.dumps({"event_type": "assemblies_symlinked", "sequencing_run_id": analysis_run_id, "assembly_analysis_output_dir": analysis_pipeline_output_dir, "assemblies_symlink_dir": assemblies_dir}))
-            elif pipeline['pipeline_name'] == 'BCCDC-PHL/mlst-nf':
-                run['analysis_parameters']['fastq_input'] = stashed_fastq_input
+            if pipeline['pipeline_name'] == 'BCCDC-PHL/hcv-nf':
+                pass
         except subprocess.CalledProcessError as e:
             logging.error(json.dumps({"event_type": "analysis_failed", "sequencing_run_id": analysis_run_id, "pipeline_command": " ".join(pipeline_command)}))
         except OSError as e:
