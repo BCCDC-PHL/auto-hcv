@@ -130,12 +130,6 @@ def analyze_run(config: dict[str, object], run: dict[str, object], assembly_mode
     """
     base_analysis_outdir = config['analysis_output_dir']
     base_analysis_work_dir = config['analysis_work_dir']
-    no_value_flags_by_pipeline_name = {
-        "BCCDC-PHL/taxon-abundance": [],
-        "BCCDC-PHL/routine-assembly": ["hybrid", "long_only", "bakta", "prokka"],
-        "BCCDC-PHL/mlst-nf": [],
-        "BCCDC-PHL/plasmid-screen": ["pre_assembled"],
-    }
     if 'notification_email_addresses' in config:
         notification_email_addresses = config['notification_email_addresses']
     else:
@@ -198,11 +192,9 @@ def analyze_run(config: dict[str, object], run: dict[str, object], assembly_mode
         if 'send_notification_emails' in config and config['send_notification_emails']:
             pipeline_command += ['-with-notification', ','.join(notification_email_addresses)]
         for flag, config_value in pipeline_parameters.items():
-            if config_value is None and flag not in no_value_flags_by_pipeline_name[pipeline['pipeline_name']]:
+            if config_value is None:
                 value = run['analysis_parameters'][flag]
                 pipeline_command += ['--' + flag, value]
-            elif config_value is None and flag in no_value_flags_by_pipeline_name[pipeline['pipeline_name']]:
-                pipeline_command += ['--' + flag]
             else:
                 value = config_value
                 pipeline_command += ['--' + flag, value]
