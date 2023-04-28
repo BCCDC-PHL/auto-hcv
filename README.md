@@ -1,5 +1,5 @@
-# auto-cpo
-Automated analysis of carbapenemase-producing organism (CPO) sequence data.
+# auto-hcv
+Automated analysis of HCV sequence data.
 
 # Installation
 
@@ -7,7 +7,7 @@ Automated analysis of carbapenemase-producing organism (CPO) sequence data.
 Start the tool as follows:
 
 ```bash
-auto-cpo --config config.json
+auto-hcv --config config.json
 ```
 
 See the Configuration section of this document for details on preparing a configuration file.
@@ -15,7 +15,7 @@ See the Configuration section of this document for details on preparing a config
 More detailed logs can be produced by controlling the log level using the `--log-level` flag:
 
 ```bash
-auto-cpo --config config.json --log-level debug
+auto-hcv --config config.json --log-level debug
 ```
 
 # Configuration
@@ -25,7 +25,7 @@ This tool takes a single config file, in JSON format, with the following structu
 {
   "fastq_by_run_dir": "/path/to/fastq_symlinks_by_run",
   "analysis_output_dir": "/path/to/analysis_by_run",
-  "analysis_work_dir": "/path/to/auto-flu-work",
+  "analysis_work_dir": "/path/to/auto-hcv-work",
   "notification_email_addresses": [
 	"someone@example.org",
 	"someone_else@example.org"
@@ -34,8 +34,8 @@ This tool takes a single config file, in JSON format, with the following structu
   "scan_interval_seconds": 3600,
   "pipelines": [
     {
-      "pipeline_name": "BCCDC-PHL/routine-assembly",
-      "pipeline_version": "0.3.0",
+      "pipeline_name": "BCCDC-PHL/hcv-nf",
+      "pipeline_version": "main",
       "pipeline_parameters": {
   	    "fastq_input": null,
    	    "outdir": null
