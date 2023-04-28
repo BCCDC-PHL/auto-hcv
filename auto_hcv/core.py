@@ -44,7 +44,6 @@ def find_fastq_dirs(config, check_symlinks_complete=True):
             run = {
                 "run_id": run_id,
                 "fastq_directory": run_fastq_directory,
-                "instrument_type": "illumina",
                 "analysis_parameters": analysis_parameters
             }
             yield run
@@ -149,6 +148,7 @@ def analyze_run(config: dict[str, object], run: dict[str, object], assembly_mode
         pipeline_minor_version = ''.join(pipeline['pipeline_version'].rsplit('.', 1)[0])
 
         if pipeline['pipeline_name'] == 'BCCDC-PHL/hcv-nf':
+            # Put any logic/actions you need to perform before running this pipeline here
             pass
 
         analysis_output_dir_name = '-'.join([pipeline_short_name, pipeline_minor_version, 'output'])
@@ -175,19 +175,6 @@ def analyze_run(config: dict[str, object], run: dict[str, object], assembly_mode
             if stashed_fastq_input is not None:
                 run['analysis_parameters']['fastq_input'] = stashed_fastq_input
             continue
-
-        if pipeline['pipeline_name'] == 'BCCDC-PHL/hcv-nf':
-            run_fastq_files = glob.glob(os.path.join(run['analysis_parameters']['fastq_input'], '*.f*q.gz'))
-            first_fastq = None
-            if len(run_fastq_files) > 0:
-                first_fastq = run_fastq_files[0]
-            else:
-                first_fastq = None
-                logging.error(json.dumps({"event_type": "find_fastq_files_failed", "fastq_directory_path": os.path.abspath(run['analysis_parameters']['fastq_input'])}))
-                continue
-
-            read_length = fastq.estimate_read_length(fastq.get_first_n_reads(first_fastq, 100))
-            pipeline_parameters['read_length'] = str(read_length)
 
         analysis_timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
         analysis_work_dir = os.path.abspath(os.path.join(base_analysis_work_dir, 'work-' + analysis_run_id + '_' + pipeline_short_name + '_' + analysis_timestamp))
@@ -223,6 +210,7 @@ def analyze_run(config: dict[str, object], run: dict[str, object], assembly_mode
         logging.info(json.dumps({"event_type": "analysis_started", "sequencing_run_id": analysis_run_id, "pipeline_command": " ".join(pipeline_command)}))
         analysis_complete = {"timestamp_analysis_start": datetime.datetime.now().isoformat()}
         try:
+            # Running the pipeline is disabled by commenting out the line below. Uncomment to enable analysis.
             # analysis_result = subprocess.run(pipeline_command, capture_output=True, check=True)
             analysis_complete['timestamp_analysis_complete'] = datetime.datetime.now().isoformat()
             with open(os.path.join(analysis_pipeline_output_dir, 'analysis_complete.json'), 'w') as f:
@@ -231,6 +219,7 @@ def analyze_run(config: dict[str, object], run: dict[str, object], assembly_mode
             shutil.rmtree(analysis_work_dir, ignore_errors=True)
             logging.info(json.dumps({"event_type": "analysis_work_dir_deleted", "sequencing_run_id": analysis_run_id, "analysis_work_dir_path": analysis_work_dir}))
             if pipeline['pipeline_name'] == 'BCCDC-PHL/hcv-nf':
+                # Put any logic/actions you need to perform after running this pipeline here.
                 pass
         except subprocess.CalledProcessError as e:
             logging.error(json.dumps({"event_type": "analysis_failed", "sequencing_run_id": analysis_run_id, "pipeline_command": " ".join(pipeline_command)}))
