@@ -110,7 +110,7 @@ def check_analysis_dependencies_complete(pipeline: dict[str, object], analysis: 
     return all_dependencies_complete
 
 
-def analyze_run(config: dict[str, object], run: dict[str, object], assembly_mode: str):
+def analyze_run(config: dict[str, object], run: dict[str, object]):
     """
     Initiate an analysis on one directory of fastq files. We assume that the directory of fastq files is named using
     a sequencing run ID.
@@ -140,6 +140,8 @@ def analyze_run(config: dict[str, object], run: dict[str, object], assembly_mode
         pipeline_parameters = pipeline['pipeline_parameters']
         pipeline_short_name = pipeline['pipeline_name'].split('/')[1]
         pipeline_minor_version = ''.join(pipeline['pipeline_version'].rsplit('.', 1)[0])
+        analysis_run_id = run['run_id']
+        analysis_run_output_dir = os.path.join(base_analysis_outdir, run['run_id'])
 
         if pipeline['pipeline_name'] == 'BCCDC-PHL/hcv-nf':
             # Put any logic/actions you need to perform before running this pipeline here
@@ -188,6 +190,7 @@ def analyze_run(config: dict[str, object], run: dict[str, object], assembly_mode
             '-with-report', analysis_report_path,
             '-with-trace', analysis_trace_path,
             '-with-timeline', analysis_timeline_path,
+            '--prefix', analysis_run_id
         ]
         if 'send_notification_emails' in config and config['send_notification_emails']:
             pipeline_command += ['-with-notification', ','.join(notification_email_addresses)]
@@ -203,7 +206,8 @@ def analyze_run(config: dict[str, object], run: dict[str, object], assembly_mode
         analysis_complete = {"timestamp_analysis_start": datetime.datetime.now().isoformat()}
         try:
             # Running the pipeline is disabled by commenting out the line below. Uncomment to enable analysis.
-            # analysis_result = subprocess.run(pipeline_command, capture_output=True, check=True)
+            #print(pipeline_command)
+            analysis_result = subprocess.run(pipeline_command, capture_output=True, check=True)
             analysis_complete['timestamp_analysis_complete'] = datetime.datetime.now().isoformat()
             with open(os.path.join(analysis_pipeline_output_dir, 'analysis_complete.json'), 'w') as f:
                 json.dump(analysis_complete, f, indent=2)
