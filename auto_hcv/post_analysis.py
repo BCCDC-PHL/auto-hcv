@@ -119,13 +119,7 @@ def post_analysis(config, pipeline, run):
 	:type run: dict
 	:return: None
 	"""
-	print('config')
-	print(config)
-	print('pipeline')
-	print(pipeline)
-	
-	print('run')
-	print(run)
+
 	pipeline_name = pipeline['pipeline_name']
 	pipeline_short_name = pipeline_name.split('/')[1]
 	pipeline_version = pipeline['pipeline_version']
