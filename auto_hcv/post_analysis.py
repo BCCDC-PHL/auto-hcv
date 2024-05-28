@@ -40,7 +40,7 @@ def transfer_hcv_results(config, pipeline, run, fstring_list=DEFAULT_SAMPLE_FILE
 
 	# Check if the run already exists in the summary folder
 	if os.path.isfile(pathjoin(dest_path, "transfer_complete.json")):
-		logging.error(json.dumps({"event_type": "transfer_hcv_folder_exists_complete","sequencing_run_id": run['run_id'],"pipeline_name": pipeline['pipeline_name']}))
+		logging.warning(json.dumps({"event_type": "transfer_hcv_folder_exists_complete","sequencing_run_id": run['run_id'],"pipeline_name": pipeline['pipeline_name']}))
 		return
 	elif os.path.isdir(dest_path):
 		logging.error(json.dumps({"event_type": "transfer_hcv_folder_exists_incomplete","sequencing_run_id": run['run_id'],"pipeline_name": pipeline['pipeline_name']}))
@@ -88,7 +88,7 @@ def transfer_hcv_results(config, pipeline, run, fstring_list=DEFAULT_SAMPLE_FILE
 		logging.info(json.dumps({"event_type": "transfer_hcv_results_complete","sequencing_run_id": run['run_id'],"pipeline_name": pipeline['pipeline_name']}))
 	
 	except FileExistsError as e:
-		logging.error(json.dumps({"event_type": "transfer_hcv_directories_already_exist_error","sequencing_run_id": run['run_id'],"pipeline_name": pipeline['pipeline_name'], 'error': e}))
+		logging.error(json.dumps({"event_type": "transfer_hcv_directory_exists_error","sequencing_run_id": run['run_id'],"pipeline_name": pipeline['pipeline_name'], 'error': e}))
 		
 
 def post_analysis_hcv_nf(config, pipeline, run):
