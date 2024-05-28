@@ -8,7 +8,7 @@ import shutil
 import subprocess
 
 from typing import Iterator, Optional
-
+from . import post_analysis
 
 def find_fastq_dirs(config, check_symlinks_complete=True):
     miseq_run_id_regex = "\d{6}_M\d{5}_\d+_\d{9}-[A-Z0-9]{5}"
@@ -212,12 +212,9 @@ def analyze_run(config: dict[str, object], run: dict[str, object]):
             with open(os.path.join(analysis_pipeline_output_dir, 'analysis_complete.json'), 'w') as f:
                 json.dump(analysis_complete, f, indent=2)
             logging.info(json.dumps({"event_type": "analysis_completed", "sequencing_run_id": analysis_run_id, "pipeline_command": " ".join(pipeline_command)}))
-            shutil.rmtree(analysis_work_dir, ignore_errors=True)
-            logging.info(json.dumps({"event_type": "analysis_work_dir_deleted", "sequencing_run_id": analysis_run_id, "analysis_work_dir_path": analysis_work_dir}))
-            if pipeline['pipeline_name'] == 'BCCDC-PHL/hcv-nf':
-                # Put any logic/actions you need to perform after running this pipeline here.
-                pass
+
+            # Put any logic/actions you need to perform after running this pipeline here.
+            post_analysis.post_analysis(config, pipeline, run)
+            
         except subprocess.CalledProcessError as e:
-            logging.error(json.dumps({"event_type": "analysis_failed", "sequencing_run_id": analysis_run_id, "pipeline_command": " ".join(pipeline_command)}))
-        except OSError as e:
-            logging.error(json.dumps({"event_type": "delete_analysis_work_dir_failed", "sequencing_run_id": analysis_run_id, "analysis_work_dir_path": analysis_work_dir}))
+            logging.error(json.dumps({"event_type": "analysis_failed", "sequencing_run_id": analysis_run_id, "pipeline_command": " ".join(pipeline_command), "error": str(e)}))
