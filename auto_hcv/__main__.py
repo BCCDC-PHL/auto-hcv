@@ -9,7 +9,6 @@ import time
 
 import auto_hcv.config
 import auto_hcv.core as core
-from auto_hcv.transfer.core import transfer_hcv_results
 
 DEFAULT_SCAN_INTERVAL_SECONDS = 3600.0
 
@@ -59,7 +58,7 @@ def main():
                         logging.error(json.dumps({"event_type": "load_config_failed", "config_file": os.path.abspath(args.config)}))
 
                     core.analyze_run(config, run)
-                    transfer_hcv_results(config, run)
+
                 if quit_when_safe:
                     exit(0)
             scan_complete_timestamp = datetime.datetime.now()
