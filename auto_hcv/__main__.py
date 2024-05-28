@@ -58,6 +58,7 @@ def main():
                         logging.error(json.dumps({"event_type": "load_config_failed", "config_file": os.path.abspath(args.config)}))
 
                     core.analyze_run(config, run)
+
                 if quit_when_safe:
                     exit(0)
             scan_complete_timestamp = datetime.datetime.now()
