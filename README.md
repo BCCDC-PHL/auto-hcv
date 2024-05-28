@@ -25,6 +25,7 @@ This tool takes a single config file, in JSON format, with the following structu
 {
   "fastq_by_run_dir": "/path/to/fastq_symlinks_by_run",
   "analysis_output_dir": "/path/to/analysis_by_run",
+  "analysis_report_dir": "/path/to/analysis_report_dir",
   "analysis_work_dir": "/path/to/auto-hcv-work",
   "notification_email_addresses": [
 	"someone@example.org",
