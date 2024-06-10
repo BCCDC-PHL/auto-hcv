@@ -36,7 +36,7 @@ def transfer_hcv_results(config, pipeline, run, fstring_list=DEFAULT_SAMPLE_FILE
 
 	# Set the source and destination paths for file transfer
 	src_path = pathjoin(config['analysis_output_dir'], run['run_id'], pipeline_path_name)
-	dest_path = pathjoin(config['analysis_report_dir'], pipeline_path_name, run['run_id'])
+	dest_path = pathjoin(config['analysis_report_dir'], pipeline_path_name, run['run_id'], datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
 
 	# Check if the run already exists in the summary folder
 	if os.path.isfile(pathjoin(dest_path, "transfer_complete.json")):
