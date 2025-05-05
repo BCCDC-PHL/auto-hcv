@@ -11,8 +11,8 @@ from typing import Iterator, Optional
 from . import post_analysis
 
 def find_fastq_dirs(config, check_symlinks_complete=True):
-    miseq_run_id_regex = "\d{6}_M\d{5}_\d+_\d{9}-[A-Z0-9]{5}"
-    nextseq_run_id_regex = "\d{6}_VH\d{5}_\d+_[A-Z0-9]{9}"
+    miseq_run_id_regex = "\\d{6}_M\\d{5}_\\d+_\\d{9}-[A-Z0-9]{5}"
+    nextseq_run_id_regex = "\\d{6}_VH\\d{5}_\\d+_[A-Z0-9]{9}"
     
     fastq_by_run_dir = config['fastq_by_run_dir']
     subdirs = os.scandir(fastq_by_run_dir)
@@ -205,9 +205,10 @@ def analyze_run(config: dict[str, object], run: dict[str, object]):
         logging.info(json.dumps({"event_type": "analysis_started", "sequencing_run_id": analysis_run_id, "pipeline_command": " ".join(pipeline_command)}))
         analysis_complete = {"timestamp_analysis_start": datetime.datetime.now().isoformat()}
         try:
+            os.makedirs(analysis_work_dir)
             # Running the pipeline is disabled by commenting out the line below. Uncomment to enable analysis.
             #print(pipeline_command)
-            analysis_result = subprocess.run(pipeline_command, capture_output=True, check=True)
+            analysis_result = subprocess.run(pipeline_command, capture_output=True, check=True, cwd=analysis_work_dir)
             analysis_complete['timestamp_analysis_complete'] = datetime.datetime.now().isoformat()
             with open(os.path.join(analysis_pipeline_output_dir, 'analysis_complete.json'), 'w') as f:
                 json.dump(analysis_complete, f, indent=2)
