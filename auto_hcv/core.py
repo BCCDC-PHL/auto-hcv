@@ -215,7 +215,7 @@ def analyze_run(config: dict[str, object], run: dict[str, object]):
             logging.info(json.dumps({"event_type": "analysis_completed", "sequencing_run_id": analysis_run_id, "pipeline_command": " ".join(pipeline_command)}))
 
             # Put any logic/actions you need to perform after running this pipeline here.
-            post_analysis.post_analysis(config, pipeline, run)
+            #post_analysis.post_analysis(config, pipeline, run)
             
         except subprocess.CalledProcessError as e:
             logging.error(json.dumps({"event_type": "analysis_failed", "sequencing_run_id": analysis_run_id, "pipeline_command": " ".join(pipeline_command), "error": str(e)}))
