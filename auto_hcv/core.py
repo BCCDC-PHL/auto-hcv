@@ -8,7 +8,7 @@ import shutil
 import subprocess
 
 from typing import Iterator, Optional
-from . import post_analysis
+import auto_hcv.post_analysis as post_analysis
 
 def find_fastq_dirs(config, check_symlinks_complete=True):
     miseq_run_id_regex = "\\d{6}_M\\d{5}_\\d+_\\d{9}-[A-Z0-9]{5}"
@@ -19,6 +19,7 @@ def find_fastq_dirs(config, check_symlinks_complete=True):
     if 'analyze_runs_in_reverse_order' in config and config['analyze_runs_in_reverse_order']:
         subdirs = sorted(subdirs, key=lambda x: os.path.basename(x.path), reverse=True)
     for subdir in subdirs:
+        print(subdir)
         run_id = subdir.name
         run_fastq_directory = os.path.abspath(subdir.path)
 
@@ -135,6 +136,7 @@ def analyze_run(config: dict[str, object], run: dict[str, object]):
     else:
         notification_email_addresses = []
     for pipeline in config['pipelines']:
+        print('here')
         stashed_fastq_input = None
         stashed_fastq_input_long = None
         pipeline_parameters = pipeline['pipeline_parameters']
@@ -192,6 +194,7 @@ def analyze_run(config: dict[str, object], run: dict[str, object]):
             '-with-timeline', analysis_timeline_path,
             '--prefix', analysis_run_id
         ]
+        print(pipeline_command)
         if 'send_notification_emails' in config and config['send_notification_emails']:
             pipeline_command += ['-with-notification', ','.join(notification_email_addresses)]
         for flag, config_value in pipeline_parameters.items():
@@ -215,7 +218,7 @@ def analyze_run(config: dict[str, object], run: dict[str, object]):
             logging.info(json.dumps({"event_type": "analysis_completed", "sequencing_run_id": analysis_run_id, "pipeline_command": " ".join(pipeline_command)}))
 
             # Put any logic/actions you need to perform after running this pipeline here.
-            #post_analysis.post_analysis(config, pipeline, run)
+            post_analysis.post_analysis(config, pipeline, run)
             
         except subprocess.CalledProcessError as e:
             logging.error(json.dumps({"event_type": "analysis_failed", "sequencing_run_id": analysis_run_id, "pipeline_command": " ".join(pipeline_command), "error": str(e)}))

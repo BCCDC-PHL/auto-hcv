@@ -6,6 +6,8 @@ import logging
 import os
 from os.path import join as pathjoin
 import shutil
+from .report_html import build_report_html
+
 
 
 # Default formats of sample files to be transferred
@@ -25,7 +27,6 @@ def transfer_file(src_path, dest_path):
 	except FileNotFoundError as e :
 		# Log a warning if the file does not exist
 		logging.warning(json.dumps({"event_type": "transfer_file_does_not_exist", "file": src_path}))
-		
 
 # Function to transfer HCV results
 def transfer_hcv_results(config, pipeline, run, fstring_list=DEFAULT_SAMPLE_FILES):
@@ -98,7 +99,9 @@ def post_analysis_hcv_nf(config, pipeline, run):
 				"pipeline_name": pipeline['pipeline_name']
 			}))
 
-	transfer_hcv_results(config, pipeline, run)
+	#transfer_hcv_results(config, pipeline, run)
+	build_report_html(config,pipeline,run)
+
 
 def find_latest_glob(path):
 	list_dirs = glob.glob(path)
