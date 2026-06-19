@@ -41,12 +41,7 @@
               <div class="local-toc"><ul>
 <li><a class="reference internal" href="#">BCCDC-PHL auto-hcv</a></li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
-<li><a class="reference internal" href="#auto-hcv-core">auto_hcv.core</a><ul>
-<li><a class="reference internal" href="#auto_hcv.core.analyze_run"><code class="docutils literal notranslate"><span class="pre">analyze_run()</span></code></a></li>
-<li><a class="reference internal" href="#auto_hcv.core.check_analysis_dependencies_complete"><code class="docutils literal notranslate"><span class="pre">check_analysis_dependencies_complete()</span></code></a></li>
-<li><a class="reference internal" href="#auto_hcv.core.scan"><code class="docutils literal notranslate"><span class="pre">scan()</span></code></a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#auto-hcv-core">auto_hcv.core</a></li>
 <li><a class="reference internal" href="#auto-hcv-config">auto_hcv.config</a></li>
 </ul>
 </div>
@@ -90,72 +85,6 @@
 <section id="auto-hcv-core">
 <h1>auto_hcv.core<a class="headerlink" href="#auto-hcv-core" title="Permalink to this heading"></a></h1>
 <p>This module includes the core functionality for finding input datasets and running analyses.</p>
-<span class="target" id="module-auto_hcv.core"></span><dl class="py function">
-<dt class="sig sig-object py" id="auto_hcv.core.analyze_run">
-<span class="sig-prename descclassname"><span class="pre">auto_hcv.core.</span></span><span class="sig-name descname"><span class="pre">analyze_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auto_hcv.core.analyze_run" title="Permalink to this definition"></a></dt>
-<dd><p>Initiate an analysis on one directory of fastq files. We assume that the directory of fastq files is named using
-a sequencing run ID.</p>
-<p>Runs the pipeline as defined in the config, with parameters configured for the run to be analyzed. Skips any
-analyses that have already been initiated (whether completed or not).</p>
-<p>Some pipelines may specify that they depend on the outputs of another through their ‘dependencies’ config.
-For those pipelines, we confirm that all of the upstream analyses that we depend on are complete, or the analysis will be skipped.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>config</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>object</em><em>]</em>) – </p></li>
-<li><p><strong>analysis</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>object</em><em>]</em>) – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>NoneType</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="auto_hcv.core.check_analysis_dependencies_complete">
-<span class="sig-prename descclassname"><span class="pre">auto_hcv.core.</span></span><span class="sig-name descname"><span class="pre">check_analysis_dependencies_complete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pipeline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">analysis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">analysis_run_output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#auto_hcv.core.check_analysis_dependencies_complete" title="Permalink to this definition"></a></dt>
-<dd><p>Check that all of the entries in the pipeline’s <cite>dependencies</cite> config have completed. If so, return True. Return False otherwise.</p>
-<p>Pipeline completion is determined by the presence of an <cite>analysis_complete.json</cite> file in the analysis output directory.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>pipeline</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>object</em><em>]</em>) – </p></li>
-<li><p><strong>analysis</strong> (<em>dictp</em><em>[</em><em>str</em><em>, </em><em>object</em><em>]</em>) – </p></li>
-<li><p><strong>analysis_run_output_dir</strong> (<em>str</em>) – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Whether or not all of the pipelines listed in <cite>dependencies</cite> have completed.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="auto_hcv.core.scan">
-<span class="sig-prename descclassname"><span class="pre">auto_hcv.core.</span></span><span class="sig-name descname"><span class="pre">scan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">object</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#auto_hcv.core.scan" title="Permalink to this definition"></a></dt>
-<dd><p>Scanning involves looking for all existing runs and storing them to the database,
-then looking for all existing symlinks and storing them to the database.
-At the end of a scan, we should be able to determine which (if any) symlinks need to be created.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>config</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>object</em><em>]</em>) – Application config.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A run directory to analyze, or None</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Iterator[Optional[dict[str, object]]]</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 <section id="auto-hcv-config">
 <h1>auto_hcv.config<a class="headerlink" href="#auto-hcv-config" title="Permalink to this heading"></a></h1>
